@@ -6,6 +6,8 @@ import { createPayment } from "../modules/api/MercadoPago";
 
 const BankForm = () => {
 
+  const [email, setEmail] = useState<string>('');
+  const [amount, setAmount] = useState<number>(0);
   const [copied, setCopied] = useState<boolean>(false);
   const paymentMutation = createPayment()
 
@@ -14,11 +16,12 @@ const BankForm = () => {
   let qrcode = paymentMutation.data?.data.point_of_interaction.transaction_data.qr_code
   let qrcode64 = paymentMutation.data?.data.point_of_interaction.transaction_data.qr_code_base64
 
-  const handleGenerateQRCode = async () => {
-    await paymentMutation.mutateAsync({
-      amount: 10,
-      email: 'vinicius.gadelha@outlook.com.br',
+  const handleSubmit = () => {
+    paymentMutation.mutate({
+      amount: amount,
+      email: email,
     })
+    setCopied(false)
   }
 
   const handleCopyButton = () => {
@@ -27,8 +30,6 @@ const BankForm = () => {
       navigator.clipboard.writeText(qrcode)
     }
   }
-
-  console.log(data)
 
   let qrcodeBox;
   if (isLoading && !data) {
@@ -62,9 +63,21 @@ const BankForm = () => {
         farmbank
       </Typography>
       {/* <TextField id="outlined-basic" label="Telefone" variant="outlined" size="small" sx={{ minWidth: '19rem' }} type="tel" /> */}
-      <TextField id="outlined-basic" label="Email" variant="outlined" size="small" sx={{ minWidth: '19rem' }} type="email" />
-      <TextField id="outlined-basic" label="R$" variant="outlined" size="small" sx={{ minWidth: '19rem' }} />
-      <Button variant="contained" color="secondary" onClick={handleGenerateQRCode}>Gerar QR Code</Button>
+      <TextField 
+        label="Email" 
+        variant="outlined" 
+        size="small" 
+        sx={{ minWidth: '19rem' }} 
+        type="email" 
+        onChange={e=>setEmail(e.target.value)}/>
+      <TextField 
+        label="R$" 
+        variant="outlined" 
+        size="small" 
+        sx={{ minWidth: '19rem' }} 
+        type="number"
+        onChange={e=>setAmount(parseFloat(e.target.value))}/>
+      <Button variant="contained" color="secondary" onClick={handleSubmit}>Gerar QR Code</Button>
       {qrcodeBox}
     </Form>
   );
