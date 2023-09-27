@@ -7,7 +7,9 @@ import { createPayment } from "../modules/api/MercadoPago";
 const BankForm = () => {
 
   const [email, setEmail] = useState<string>('');
+  const [emailError, setEmailError] = useState<boolean>(false)
   const [amount, setAmount] = useState<number>(0);
+  const [amountError, setAmountError] = useState<boolean>(false)
   const [copied, setCopied] = useState<boolean>(false);
   const paymentMutation = createPayment()
 
@@ -17,11 +19,23 @@ const BankForm = () => {
   let qrcode64 = paymentMutation.data?.data.point_of_interaction.transaction_data.qr_code_base64
 
   const handleSubmit = () => {
-    paymentMutation.mutate({
-      amount: amount,
-      email: email,
-    })
-    setCopied(false)
+    let hasError = false
+    if(email.length < 6 || !email.includes("@") || !email.includes(".com")) {
+      setEmailError(true)
+      hasError = true
+    } else setEmailError(false)
+    if(amount < 10) {
+      setAmountError(true)
+      hasError = true
+    } else setAmountError(false)
+
+    if(!hasError) {
+      paymentMutation.mutate({
+        amount: amount,
+        email: email,
+      })
+      setCopied(false)
+    }
   }
 
   const handleCopyButton = () => {
@@ -69,14 +83,18 @@ const BankForm = () => {
         size="small" 
         sx={{ minWidth: '19rem' }} 
         type="email" 
-        onChange={e=>setEmail(e.target.value)}/>
+        onChange={e=>setEmail(e.target.value)}
+        error={emailError}
+        helperText={emailError ? "Informe um email válido" : null}/>
       <TextField 
         label="R$" 
         variant="outlined" 
         size="small" 
         sx={{ minWidth: '19rem' }} 
         type="number"
-        onChange={e=>setAmount(parseFloat(e.target.value))}/>
+        onChange={e=>setAmount(parseFloat(e.target.value))}
+        error={amountError}
+        helperText={amountError ? "Digite um valor acima de R$ 10" : null}/>
       <Button variant="contained" color="secondary" onClick={handleSubmit}>Gerar QR Code</Button>
       {qrcodeBox}
     </Form>
