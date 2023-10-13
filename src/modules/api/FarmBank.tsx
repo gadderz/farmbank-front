@@ -1,7 +1,7 @@
 import axios from "axios";
 import { useMutation } from "react-query";
 
-const FARMBANK_BASE_URL = import.meta.env.VITE_MERCADO_PAGO_BASE_URL
+const FARMBANK_BASE_URL = import.meta.env.VITE_FARMBANK_BASE_URL
 
 type CreatePixRequest = {
 	amount: number,
