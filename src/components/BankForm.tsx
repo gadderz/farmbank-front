@@ -2,7 +2,8 @@ import { useState } from "react";
 import { Form } from "./BankForm.style";
 import { CheckCircleOutline, DiamondRounded } from "@mui/icons-material";
 import { Box, Button, CircularProgress, TextField, Typography } from "@mui/material";
-import { createPayment } from "../modules/api/MercadoPago";
+import { createPayment } from "../modules/api/FarmBank";
+import { MuiTelInput } from "mui-tel-input";
 
 const BankForm = () => {
 
@@ -10,13 +11,16 @@ const BankForm = () => {
   const [emailError, setEmailError] = useState<boolean>(false)
   const [amount, setAmount] = useState<number>(0);
   const [amountError, setAmountError] = useState<boolean>(false)
+  const [phoneNumber, setPhoneNumber] = useState<string>('');
+  const [phoneNumberError, setPhoneNumberError] = useState<boolean>(false)
   const [copied, setCopied] = useState<boolean>(false);
   const paymentMutation = createPayment()
 
   let data = paymentMutation.data
+  console.log(data)
   let isLoading = paymentMutation.isLoading
-  let qrcode = paymentMutation.data?.data.point_of_interaction.transaction_data.qr_code
-  let qrcode64 = paymentMutation.data?.data.point_of_interaction.transaction_data.qr_code_base64
+  let qrcode = paymentMutation.data?.data?.pixCopyPaste
+  let qrcode64 = paymentMutation.data?.data?.pixBase64
 
   const handleSubmit = () => {
     let hasError = false
@@ -28,11 +32,16 @@ const BankForm = () => {
       setAmountError(true)
       hasError = true
     } else setAmountError(false)
-
+    let phone: string = phoneNumber.replaceAll(" ","", ).replace("+55","")
+    if(phone.length != 11) {
+      setPhoneNumberError(true)
+      hasError = true
+    }else setPhoneNumberError(false)
     if(!hasError) {
       paymentMutation.mutate({
         amount: amount,
         email: email,
+        phoneNumber: phone
       })
       setCopied(false)
     }
@@ -43,6 +52,13 @@ const BankForm = () => {
       setCopied(true)
       navigator.clipboard.writeText(qrcode)
     }
+  }
+
+  const handlePhoneNumberChange = (value: string) => {
+    if(value.replaceAll(" ","").length > 14) {
+      return
+    }
+    setPhoneNumber(value)
   }
 
   let qrcodeBox;
@@ -76,7 +92,16 @@ const BankForm = () => {
       <Typography variant="h3" color={'#505050'}>
         farmbank
       </Typography>
-      {/* <TextField id="outlined-basic" label="Telefone" variant="outlined" size="small" sx={{ minWidth: '19rem' }} type="tel" /> */}
+      <MuiTelInput
+        onlyCountries={["BR"]}
+        defaultCountry="BR"
+        sx={{ minWidth: '19rem' }}
+        onChange={handlePhoneNumberChange}
+        label="Zap"
+        value={phoneNumber}
+        error={phoneNumberError}
+        helperText={phoneNumberError ? "Informe um telefone válido" : null}
+      />
       <TextField 
         label="Email" 
         variant="outlined" 
