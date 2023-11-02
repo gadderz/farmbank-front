@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Form } from "./BankForm.style";
 import { CheckCircleOutline, DiamondRounded } from "@mui/icons-material";
 import { Box, Button, CircularProgress, TextField, Typography } from "@mui/material";
-import { createPayment } from "../modules/api/FarmBank";
+import { createPayment, warmupApi } from "../modules/api/FarmBank";
 import { MuiTelInput } from "mui-tel-input";
 
 const BankForm = () => {
@@ -16,8 +16,12 @@ const BankForm = () => {
   const [copied, setCopied] = useState<boolean>(false);
   const paymentMutation = createPayment()
 
+  useEffect(() => {
+    const fetchData = async () => await warmupApi();
+    fetchData()
+  })
+
   let data = paymentMutation.data
-  console.log(data)
   let isLoading = paymentMutation.isLoading
   let qrcode = paymentMutation.data?.data?.pixCopyPaste
   let qrcode64 = paymentMutation.data?.data?.pixBase64
