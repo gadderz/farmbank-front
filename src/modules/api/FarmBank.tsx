@@ -1,5 +1,5 @@
 import axios from "axios";
-import { useMutation, useQuery } from "react-query";
+import { useMutation } from "react-query";
 
 const FARMBANK_BASE_URL = import.meta.env.VITE_FARMBANK_BASE_URL
 
