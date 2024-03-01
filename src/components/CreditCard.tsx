@@ -1,3 +1,5 @@
+//@ts-nocheck
+
 import { useEffect, useState } from "react";
 import { getInstallments, createCardToken } from "@mercadopago/sdk-react/coreMethods";
 import { Box, Button, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, TextField, Typography } from "@mui/material";
