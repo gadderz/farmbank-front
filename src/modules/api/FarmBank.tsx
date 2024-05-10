@@ -14,7 +14,7 @@ type CreatePixRequest = {
 }
 
 export const createPayment = () => useMutation("createPayment", async (req: CreatePixRequest) => {
-    return axios.post(`${FARMBANK_BASE_URL}/api/payment`, req)
+    return await axios.post(`${FARMBANK_BASE_URL}/api/payment`, req)
 })
 
 export const warmupApi = async () => {

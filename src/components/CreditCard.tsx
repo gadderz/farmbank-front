@@ -2,12 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { getInstallments, createCardToken } from "@mercadopago/sdk-react/coreMethods";
-import { Box, Button, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, TextField, Typography } from "@mui/material";
+import { Box, Button, CircularProgress, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, TextField, Typography } from "@mui/material";
 import { Installments } from "@mercadopago/sdk-react/coreMethods/getInstallments/types";
 import ReactInputMask from "react-input-mask";
 import { createPayment } from "../modules/api/FarmBank";
 
-const AMOUNT = import.meta.env.VITE_CREDIT_CARD_AMOUNT
+const AMOUNT_STR = import.meta.env.VITE_CREDIT_CARD_AMOUNT
+const amounts: [Number] = AMOUNT_STR.split(",").map(Number)
 
 interface CreditCardProps {
   email: string;
@@ -30,15 +31,18 @@ const CreditCard = ({ email, handleRootError, phoneNumber }: CreditCardProps) =>
   const [selectedInstallment, setSelectedInstallment] = useState<number>();
   const [issuerId, setIssuerId] = useState<string>('');
   const [paymentMethod, setPaymentMethod] = useState<string>('');
+  const [amount, setAmount] = useState<number>(amounts[0]);
 
-  const paymentMutation = createPayment()
+  const [internalError, setInternalError] = useState<boolean>(false)
+
+  const { isLoading, mutate: pay, isSuccess, isIdle, isError } = createPayment()
 
   useEffect(() => {
-    if (installments == undefined && cardNumber.replaceAll(" ", "").length >= 6) {
+    if (cardNumber.replaceAll(" ", "").length >= 6) {
       const fetchData = async () => {
         try {
           const response = await getInstallments({
-            amount: AMOUNT,
+            amount: amount.toString(),
             bin: cardNumber.replaceAll(" ", "").slice(0, 6)
           });
           const creditCardInstallments = response?.filter(installment => installment.payment_type_id === 'credit_card')[0];
@@ -58,7 +62,7 @@ const CreditCard = ({ email, handleRootError, phoneNumber }: CreditCardProps) =>
     else if (cardNumber.replaceAll(" ", "").length < 6) {
       setInstallments(undefined);
     }
-  }, [cardNumber])
+  }, [cardNumber, amount])
 
   const handleSelectedInstallment = (e: SelectChangeEvent<number>) => {
     setSelectedInstallment(e.target.value as number);
@@ -98,16 +102,21 @@ const CreditCard = ({ email, handleRootError, phoneNumber }: CreditCardProps) =>
         securityCode: cod
       })
 
-      let phone: string = phoneNumber.replaceAll(" ", "",).replace("+55", "")
-      paymentMutation.mutate({
-        amount: parseFloat(AMOUNT),
-        email: email,
-        phoneNumber: phone,
-        paymentMethod: paymentMethod,
-        installments: selectedInstallment,
-        token: token?.id,
-        issuerId: issuerId
-      })
+      if (token == undefined) {
+        setInternalError(true)
+      } else {
+        let phone: string = phoneNumber.replaceAll(" ", "",).replace("+55", "")
+        pay({
+          amount: amount,
+          email: email,
+          phoneNumber: phone,
+          paymentMethod: paymentMethod,
+          installments: selectedInstallment,
+          token: token?.id,
+          issuerId: issuerId
+        })
+        setInternalError(false)
+      }
     }
   }
 
@@ -115,12 +124,29 @@ const CreditCard = ({ email, handleRootError, phoneNumber }: CreditCardProps) =>
     <>
       <Box display={"flex"} flexDirection={"row"} gap={1}>
         <Typography variant="button" color={"darkviolet"}>
-          R$ {AMOUNT}
+          R$ {amount}
         </Typography>
         <Typography variant="button">
           em até 12x (com juros)
         </Typography>
       </Box>
+      <FormControl fullWidth>
+          <InputLabel id="credit-value-label">Valor</InputLabel>
+          <Select
+            labelId="credit-value-label"
+            value={amount}
+            label="Valor"
+            onChange={(e) => {
+              setAmount(e.target.value as number)
+            }}
+          >
+            {
+              amounts.map((amount, index) => (
+                <MenuItem key={index} value={amount}>R$ {amount.toFixed(2).toString().replace(".", ",")}</MenuItem>
+              ))
+            }
+          </Select>
+        </FormControl>
       <ReactInputMask
         mask="9999 9999 9999 9999"
         disabled={false}
@@ -193,7 +219,26 @@ const CreditCard = ({ email, handleRootError, phoneNumber }: CreditCardProps) =>
           }
         </Select>
       </FormControl>
-      <Button variant="contained" color="secondary" onClick={handleSubmit}>Confirmar Pagamento</Button>
+      { !isIdle && isSuccess &&
+          <Typography variant="button" color="green">Pagamento realizado com sucesso!</Typography>
+      }
+      { !isIdle && isError &&
+          <Typography variant="button" color="red">Erro ao realizar pagamento!</Typography>
+      }
+      {
+        internalError &&
+        <Typography variant="button" color="red">Dados do cartão invalidos!</Typography>
+      }
+      { isLoading ?
+        <CircularProgress /> :
+        <Button 
+          variant="contained" 
+          color="secondary" 
+          onClick={handleSubmit}
+          disabled={installments == undefined}>
+            Confirmar Pagamento
+        </Button>
+      }
     </>
   );
 };
