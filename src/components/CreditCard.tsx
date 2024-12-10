@@ -1,8 +1,7 @@
-import { useEffect, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 import { getInstallments, createCardToken } from "@mercadopago/sdk-react/coreMethods";
 import { Box, Button, CircularProgress, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, TextField, Typography } from "@mui/material";
 import { Installments } from "@mercadopago/sdk-react/coreMethods/getInstallments/types";
-import ReactInputMask from "react-input-mask";
 import { CreatePayment } from "../modules/api/FarmBank";
 
 const AMOUNT_STR = process.env.NEXT_PUBLIC_CREDIT_CARD_AMOUNT
@@ -122,37 +121,37 @@ const CreditCard = ({ email, handleRootError, phoneNumber }: CreditCardProps) =>
     }
   }
 
-  const cardNumberField = () => 
-    <TextField
-      variant="outlined"
-      label="Número do cartão"
-      placeholder="0000 0000 0000 0000"
-      InputLabelProps={{ shrink: true }}
-      error={cardNumberError || !validCard}
-      helperText={cardNumberError ? "Informe um numero válido" : null}
-      sx={{ minWidth: '19rem' }} />
+  const onChangeCardNumber = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const inputValue = e.target.value;
 
-  const cardExpirationField = () => 
-    <TextField
-      label="Expiração"
-      placeholder="MM/AAAA"
-      variant="outlined"
-      size="small"
-      InputLabelProps={{ shrink: true }}
-      error={expirationDateError}
-      helperText={expirationDateError ? "Informe uma data válida" : null}
-      sx={{ minWidth: '19rem' }} />
+    if (inputValue.length < 20) {
+      const numericValue = inputValue.replace(/\D/g, '');
+      const formattedValue = numericValue.replace(/(.{4})/g, '$1 ')
+      setCardNumber(formattedValue.trim())
+    }
+  }
 
-  const cardCodField = () => 
-    <TextField
-      label="Código de segurança"
-      placeholder="123"
-      variant="outlined"
-      size="small"
-      error={codError}
-      helperText={codError ? "Informe um código válido" : null}
-      InputLabelProps={{ shrink: true }}
-      sx={{ minWidth: '19rem' }} />
+  const onChangeExpirationDate = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const inputValue = e.target.value;
+
+    if (inputValue.length < 8) {
+      const numericValue = inputValue.replace(/\D/g, '');
+      let formattedValue = numericValue; 
+      if (numericValue.length > 2) { 
+        formattedValue = `${numericValue.substring(0, 2)}/${numericValue.substring(2, 6)}`;
+      }
+      setExpirationDate(formattedValue)
+    }
+  }
+
+  const onChangeCod = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const inputValue = e.target.value;
+
+    if (inputValue.length < 4) {
+      const numericValue = inputValue.replace(/\D/g, '');
+      setCod(numericValue)
+    }
+  }
 
   return (
     <>
@@ -181,30 +180,38 @@ const CreditCard = ({ email, handleRootError, phoneNumber }: CreditCardProps) =>
             }
           </Select>
         </FormControl>
-      <ReactInputMask
-        mask="9999 9999 9999 9999"
-        disabled={false}
-        maskChar=" "
-        onChange={e => setCardNumber(e.target.value)}
-      >
-        {cardNumberField()}
-      </ReactInputMask>
-      <ReactInputMask
-        mask="99/9999"
-        disabled={false}
-        maskChar=" "
-        onChange={e => setExpirationDate(e.target.value)}
-      >
-        {cardExpirationField()}
-      </ReactInputMask>
-      <ReactInputMask
-        mask="999"
-        disabled={false}
-        maskChar=" "
-        onChange={e => setCod(e.target.value)}
-      >
-        {cardCodField()}
-      </ReactInputMask>
+        <TextField
+          variant="outlined"
+          value={cardNumber}
+          onChange={onChangeCardNumber}
+          label="Número do cartão"
+          placeholder="0000 0000 0000 0000"
+          InputLabelProps={{ shrink: true }}
+          error={cardNumberError || !validCard}
+          helperText={cardNumberError ? "Informe um numero válido" : null}
+          sx={{ minWidth: '19rem' }} />
+        <TextField
+          label="Expiração"
+          placeholder="MM/AAAA"
+          variant="outlined"
+          size="small"
+          value={expirationDate}
+          onChange={onChangeExpirationDate}
+          InputLabelProps={{ shrink: true }}
+          error={expirationDateError}
+          helperText={expirationDateError ? "Informe uma data válida" : null}
+          sx={{ minWidth: '19rem' }} />
+        <TextField
+          label="Código de segurança"
+          value={cod}
+          onChange={onChangeCod}
+          placeholder="123"
+          variant="outlined"
+          size="small"
+          error={codError}
+          helperText={codError ? "Informe um código válido" : null}
+          InputLabelProps={{ shrink: true }}
+          sx={{ minWidth: '19rem' }} />
       <TextField
         label="Nome no cartão"
         placeholder="Maria Joaquina"
