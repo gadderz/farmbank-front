@@ -7,7 +7,7 @@ import { Installments } from "@mercadopago/sdk-react/coreMethods/getInstallments
 import ReactInputMask from "react-input-mask";
 import { createPayment } from "../modules/api/FarmBank";
 
-const AMOUNT_STR = import.meta.env.VITE_CREDIT_CARD_AMOUNT
+const AMOUNT_STR = process.env.NEXT_PUBLIC_CREDIT_CARD_AMOUNT
 const amounts: [Number] = AMOUNT_STR.split(",").map(Number)
 
 interface CreditCardProps {

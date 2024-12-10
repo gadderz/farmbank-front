@@ -12,7 +12,7 @@ export type PaymentMethod = 'pix' | 'creditCard';
 
 const BankForm = () => {
 
-  initMercadoPago(import.meta.env.VITE_MERCADOPAGO_PUBLIC_KEY);
+  initMercadoPago(process.env.NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY);
 
   const [email, setEmail] = useState<string>('');
   const [emailError, setEmailError] = useState<boolean>(false)

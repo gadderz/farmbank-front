@@ -1,7 +1,7 @@
 import axios from "axios";
 import { useMutation } from "react-query";
 
-const FARMBANK_BASE_URL = import.meta.env.VITE_FARMBANK_BASE_URL
+const FARMBANK_BASE_URL = process.env.NEXT_PUBLIC_FARMBANK_BASE_URL
 
 type CreatePixRequest = {
     token?: string,
