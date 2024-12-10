@@ -1,14 +1,16 @@
-//@ts-nocheck
-
 import { useEffect, useState } from "react";
 import { getInstallments, createCardToken } from "@mercadopago/sdk-react/coreMethods";
 import { Box, Button, CircularProgress, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, TextField, Typography } from "@mui/material";
 import { Installments } from "@mercadopago/sdk-react/coreMethods/getInstallments/types";
 import ReactInputMask from "react-input-mask";
-import { createPayment } from "../modules/api/FarmBank";
+import { CreatePayment } from "../modules/api/FarmBank";
 
 const AMOUNT_STR = process.env.NEXT_PUBLIC_CREDIT_CARD_AMOUNT
-const amounts: [Number] = AMOUNT_STR.split(",").map(Number)
+let amounts: number[] = []
+
+if (AMOUNT_STR) {
+  amounts = AMOUNT_STR?.split(",").map(Number)
+}
 
 interface CreditCardProps {
   email: string;
@@ -35,7 +37,7 @@ const CreditCard = ({ email, handleRootError, phoneNumber }: CreditCardProps) =>
 
   const [internalError, setInternalError] = useState<boolean>(false)
 
-  const { isLoading, mutate: pay, isSuccess, isIdle, isError } = createPayment()
+  const { isLoading, mutate: pay, isSuccess, isIdle, isError } = CreatePayment()
 
   useEffect(() => {
     if (cardNumber.replaceAll(" ", "").length >= 6) {
@@ -105,7 +107,7 @@ const CreditCard = ({ email, handleRootError, phoneNumber }: CreditCardProps) =>
       if (token == undefined) {
         setInternalError(true)
       } else {
-        let phone: string = phoneNumber.replaceAll(" ", "",).replace("+55", "")
+        const phone: string = phoneNumber.replaceAll(" ", "",).replace("+55", "")
         pay({
           amount: amount,
           email: email,
@@ -119,6 +121,38 @@ const CreditCard = ({ email, handleRootError, phoneNumber }: CreditCardProps) =>
       }
     }
   }
+
+  const cardNumberField = () => 
+    <TextField
+      variant="outlined"
+      label="Número do cartão"
+      placeholder="0000 0000 0000 0000"
+      InputLabelProps={{ shrink: true }}
+      error={cardNumberError || !validCard}
+      helperText={cardNumberError ? "Informe um numero válido" : null}
+      sx={{ minWidth: '19rem' }} />
+
+  const cardExpirationField = () => 
+    <TextField
+      label="Expiração"
+      placeholder="MM/AAAA"
+      variant="outlined"
+      size="small"
+      InputLabelProps={{ shrink: true }}
+      error={expirationDateError}
+      helperText={expirationDateError ? "Informe uma data válida" : null}
+      sx={{ minWidth: '19rem' }} />
+
+  const cardCodField = () => 
+    <TextField
+      label="Código de segurança"
+      placeholder="123"
+      variant="outlined"
+      size="small"
+      error={codError}
+      helperText={codError ? "Informe um código válido" : null}
+      InputLabelProps={{ shrink: true }}
+      sx={{ minWidth: '19rem' }} />
 
   return (
     <>
@@ -153,14 +187,7 @@ const CreditCard = ({ email, handleRootError, phoneNumber }: CreditCardProps) =>
         maskChar=" "
         onChange={e => setCardNumber(e.target.value)}
       >
-        {() => <TextField
-          variant="outlined"
-          label="Número do cartão"
-          placeholder="0000 0000 0000 0000"
-          InputLabelProps={{ shrink: true }}
-          error={cardNumberError || !validCard}
-          helperText={cardNumberError ? "Informe um numero válido" : null}
-          sx={{ minWidth: '19rem' }} />}
+        {cardNumberField()}
       </ReactInputMask>
       <ReactInputMask
         mask="99/9999"
@@ -168,15 +195,7 @@ const CreditCard = ({ email, handleRootError, phoneNumber }: CreditCardProps) =>
         maskChar=" "
         onChange={e => setExpirationDate(e.target.value)}
       >
-        {() => <TextField
-          label="Expiração"
-          placeholder="MM/AAAA"
-          variant="outlined"
-          size="small"
-          InputLabelProps={{ shrink: true }}
-          error={expirationDateError}
-          helperText={expirationDateError ? "Informe uma data válida" : null}
-          sx={{ minWidth: '19rem' }} />}
+        {cardExpirationField()}
       </ReactInputMask>
       <ReactInputMask
         mask="999"
@@ -184,15 +203,7 @@ const CreditCard = ({ email, handleRootError, phoneNumber }: CreditCardProps) =>
         maskChar=" "
         onChange={e => setCod(e.target.value)}
       >
-        {() => <TextField
-          label="Código de segurança"
-          placeholder="123"
-          variant="outlined"
-          size="small"
-          error={codError}
-          helperText={codError ? "Informe um código válido" : null}
-          InputLabelProps={{ shrink: true }}
-          sx={{ minWidth: '19rem' }} />}
+        {cardCodField()}
       </ReactInputMask>
       <TextField
         label="Nome no cartão"

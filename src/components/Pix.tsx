@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { CheckCircleOutline } from "@mui/icons-material";
 import { Box, Button, CircularProgress, TextField } from "@mui/material";
-import { createPayment } from "../modules/api/FarmBank";
+import { CreatePayment } from "../modules/api/FarmBank";
 
 interface PixProps {
   email: string;
@@ -14,12 +14,12 @@ const Pix = ({email, phoneNumber, handleRootError}: PixProps) => {
   const [amount, setAmount] = useState<number>(0);
   const [amountError, setAmountError] = useState<boolean>(false)
   const [copied, setCopied] = useState<boolean>(false);
-  const paymentMutation = createPayment()
+  const paymentMutation = CreatePayment()
 
-  let data = paymentMutation.data
-  let isLoading = paymentMutation.isLoading
-  let qrcode = paymentMutation.data?.data?.pixCopyPaste
-  let qrcode64 = paymentMutation.data?.data?.pixBase64
+  const data = paymentMutation.data
+  const isLoading = paymentMutation.isLoading
+  const qrcode = paymentMutation.data?.data?.pixCopyPaste
+  const qrcode64 = paymentMutation.data?.data?.pixBase64
 
   const handleSubmit = () => {
     let hasError = handleRootError()
@@ -28,7 +28,7 @@ const Pix = ({email, phoneNumber, handleRootError}: PixProps) => {
       hasError = true
     } else setAmountError(false)
     if (!hasError) {
-      let phone: string = phoneNumber.replaceAll(" ", "",).replace("+55", "")
+      const phone: string = phoneNumber.replaceAll(" ", "",).replace("+55", "")
       paymentMutation.mutate({
         amount: amount,
         email: email,

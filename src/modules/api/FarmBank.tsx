@@ -13,7 +13,7 @@ type CreatePixRequest = {
     phoneNumber: string,
 }
 
-export const createPayment = () => useMutation("createPayment", async (req: CreatePixRequest) => {
+export const CreatePayment = () => useMutation("createPayment", async (req: CreatePixRequest) => {
     return await axios.post(`${FARMBANK_BASE_URL}/api/payment`, req)
 })
 

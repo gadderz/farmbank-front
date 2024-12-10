@@ -11,8 +11,7 @@ import { initMercadoPago } from "@mercadopago/sdk-react";
 export type PaymentMethod = 'pix' | 'creditCard';
 
 const BankForm = () => {
-
-  initMercadoPago(process.env.NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY);
+  initMercadoPago(process.env.NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY ?? '');
 
   const [email, setEmail] = useState<string>('');
   const [emailError, setEmailError] = useState<boolean>(false)
@@ -31,7 +30,7 @@ const BankForm = () => {
       setEmailError(true)
       hasError = true
     } else setEmailError(false)
-    let phone: string = phoneNumber.replaceAll(" ", "",).replace("+55", "")
+    const phone: string = phoneNumber.replaceAll(" ", "",).replace("+55", "")
     if (phone.length != 11) {
       setPhoneNumberError(true)
       hasError = true
